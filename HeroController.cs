@@ -25,51 +25,68 @@ public class HeroController : MonoBehaviour
   // Update is called once per frame
   void Update()
   {
+    CheckHeroIsAlive();
+    CheckPressedButton();
+    CheckHeroOnGround();
+  }
+
+  void CheckHeroIsAlive()
+  {
     if (!IsDead)
     {
+      Time.timeScale = 1f;
+    }
+    else
+    {
+      Time.timeScale = 0f;
+    }
+  }
 
-      if (Input.GetKey(KeyCode.D))
+  void CheckPressedButton()
+  {
+    if (Input.GetKey(KeyCode.D))
+    {
+      if (Input.GetAxis("Horizontal") > 0 && !IsRight)
       {
-        if (Input.GetAxis("Horizontal") > 0 && !IsRight)
-        {
-          Flip();
-        }
-
-        anim.SetBool("IsRunning", true);
-      }
-      else if (Input.GetKey(KeyCode.A))
-      {
-        if (Input.GetAxis("Horizontal") < 0 && IsRight)
-        {
-          Flip();
-        }
-
-        anim.SetBool("IsRunning", true);
-      }
-      else
-      {
-        anim.SetBool("IsRunning", false);
+        Flip();
       }
 
-      if (Input.GetKey(KeyCode.W) && IsGround)
+      anim.SetBool("IsRunning", true);
+    }
+    else if (Input.GetKey(KeyCode.A))
+    {
+      if (Input.GetAxis("Horizontal") < 0 && IsRight)
       {
-        anim.SetTrigger("Jump");
-        rb.AddForce(new Vector2(0, jumpForce));
+        Flip();
       }
 
-      transform.Translate(Input.GetAxis("Horizontal") * speed * Time.deltaTime, 0, 0);
+      anim.SetBool("IsRunning", true);
+    }
+    else
+    {
+      anim.SetBool("IsRunning", false);
+    }
 
-      IsGround = Physics2D.OverlapArea(new Vector2(GroundCheck.position.x - 0.4f, GroundCheck.position.y - 0.2f), new Vector2(GroundCheck.position.x + 0.4f, GroundCheck.position.y + 0.2f), GroundLayer);
+    if (Input.GetKey(KeyCode.W) && IsGround)
+    {
+      anim.SetTrigger("Jump");
+      rb.AddForce(new Vector2(0, jumpForce));
+    }
 
-      if (IsGround)
-      {
-        anim.SetBool("IsFalling", false);
-      }
-      else
-      {
-        anim.SetBool("IsFalling", true);
-      }
+    transform.Translate(Input.GetAxis("Horizontal") * speed * Time.deltaTime, 0, 0);
+  }
 
+  void CheckHeroOnGround()
+  {
+    IsGround = Physics2D.OverlapArea(new Vector2(GroundCheck.position.x - 0.4f, GroundCheck.position.y - 0.2f), new Vector2(GroundCheck.position.x + 0.4f, GroundCheck.position.y + 0.2f), GroundLayer);
+
+    if (IsGround)
+    {
+      anim.SetBool("IsFalling", false);
+    }
+    else
+    {
+      anim.SetBool("IsFalling", true);
     }
   }
 

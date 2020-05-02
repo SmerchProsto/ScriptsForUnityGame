@@ -93,6 +93,11 @@ public class HeroController : MonoBehaviour
       anim.SetBool("HeroIsNormalAttacking", false);
     }
 
+    if (Input.GetKeyDown(KeyCode.K))
+    {
+      anim.SetTrigger("HardAttack");
+    }
+
 
     transform.Translate(Input.GetAxis("Horizontal") * speed * Time.deltaTime, 0, 0);
   }

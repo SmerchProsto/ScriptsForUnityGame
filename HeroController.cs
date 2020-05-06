@@ -4,22 +4,34 @@ using UnityEngine;
 
 public class HeroController : MonoBehaviour
 {
-  bool isDead, isRight, isGround;
-  int attackCost;
+  bool isDead, isRight, isGround, isCollide;
+  bool jumpOffEnable;
+
+  int attackCost, playerObject, collideObject;
+
   public int speed = 5, jumpForce = 50;
-  public LayerMask GroundLayer;
+
+  public LayerMask GroundLayer, collideLayer;
   public Transform GroundCheck;
+
   Rigidbody2D rb;
   Animator anim;
+
 
   // Start is called before the first frame update
   void Start()
   {
+    isCollide = false;
     isRight = true;
     isDead = false;
     isGround = true;
 
+    jumpOffEnable = false;
+
     attackCost = 0;
+
+    playerObject = LayerMask.NameToLayer("player");
+    collideObject = LayerMask.NameToLayer("collide");
 
     rb = GetComponent<Rigidbody2D>();
     anim = GetComponent<Animator>();
@@ -71,10 +83,15 @@ public class HeroController : MonoBehaviour
       anim.SetBool("IsRunning", false);
     }
 
-    if (Input.GetKey(KeyCode.W) && isGround)
+    if ((Input.GetKey(KeyCode.W) && isGround) || (Input.GetKey(KeyCode.W) && isCollide))
     {
       anim.SetTrigger("Jump");
       rb.AddForce(new Vector2(0, jumpForce));
+    }
+
+    if (Input.GetKey(KeyCode.S))
+    {
+      StartCoroutine("JumpOff");
     }
 
     if (Input.GetKeyDown(KeyCode.J))
@@ -104,9 +121,24 @@ public class HeroController : MonoBehaviour
 
   void CheckHeroOnGround()
   {
-    isGround = Physics2D.OverlapArea(new Vector2(GroundCheck.position.x - 0.4f, GroundCheck.position.y - 0.2f), new Vector2(GroundCheck.position.x + 0.4f, GroundCheck.position.y + 0.2f), GroundLayer);
-
+    isGround = Physics2D.OverlapArea(new Vector2(GroundCheck.position.x - 0.1f, GroundCheck.position.y - 0.05f), new Vector2(GroundCheck.position.x + 0.1f, GroundCheck.position.y + 0.05f), GroundLayer);
+    isCollide = Physics2D.OverlapArea(new Vector2(GroundCheck.position.x - 0.1f, GroundCheck.position.y - 0.05f), new Vector2(GroundCheck.position.x + 0.1f, GroundCheck.position.y + 0.05f), collideLayer);
+    /*  // Debug Func
     if (isGround)
+    {
+      print("На земле");
+    }
+    else if (isCollide)
+    {
+      print("На платформе");
+    }
+    else
+    {
+      print("Не на чем");
+    }
+*/
+
+    if (isGround || isCollide)
     {
       anim.SetBool("IsFalling", false);
     }
@@ -114,6 +146,27 @@ public class HeroController : MonoBehaviour
     {
       anim.SetBool("IsFalling", true);
     }
+
+    if (rb.velocity.y > 0)
+    {
+      isCollide = false;
+      Physics2D.IgnoreLayerCollision(playerObject, collideObject, true);
+    }
+    else
+    {
+      Physics2D.IgnoreLayerCollision(playerObject, collideObject, false);
+    }
+    
+
+  }
+
+  IEnumerator JumpOff()
+  {
+    jumpOffEnable = true;
+    Physics2D.IgnoreLayerCollision(playerObject, collideObject, true);
+    yield return new WaitForSeconds(0.5f);
+    Physics2D.IgnoreLayerCollision(playerObject, collideObject, false);
+    jumpOffEnable = false;
   }
 
   void Flip()

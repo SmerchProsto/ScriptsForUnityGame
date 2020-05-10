@@ -7,16 +7,25 @@ public class HeroController : MonoBehaviour
   bool isDead, isRight, isGround, isCollide;
   bool jumpOffEnable;
 
+  float mainCameraInitialPosX;
+  float mainCameraFinalPosX;
+  float mainCameraInitialPosY;
+  float mainCameraFinalPosY;
+
   int attackCost, playerObject, collideObject;
 
-  public int speed = 5, jumpForce = 50;
+  public int speed = 5;
+
+  int jumpForce;
 
   public LayerMask GroundLayer, collideLayer;
   public Transform GroundCheck;
 
+  public GameObject mainCamera;
+
   Rigidbody2D rb;
   Animator anim;
-
+  BoxCollider2D heroCollider;
 
   // Start is called before the first frame update
   void Start()
@@ -27,6 +36,7 @@ public class HeroController : MonoBehaviour
     isGround = true;
 
     jumpOffEnable = false;
+    jumpForce = 280;
 
     attackCost = 0;
 
@@ -35,6 +45,8 @@ public class HeroController : MonoBehaviour
 
     rb = GetComponent<Rigidbody2D>();
     anim = GetComponent<Animator>();
+
+    heroCollider = GetComponent<BoxCollider2D>();
   }
 
   // Update is called once per frame
@@ -43,7 +55,7 @@ public class HeroController : MonoBehaviour
     CheckHeroIsAlive();
     CheckHeroOnGround();
     CheckPressedButton();
-    
+    CheckHeroOnScreen();
   }
 
   void CheckHeroIsAlive()
@@ -83,7 +95,7 @@ public class HeroController : MonoBehaviour
       anim.SetBool("IsRunning", false);
     }
 
-    if ((Input.GetKey(KeyCode.W) && isGround) || (Input.GetKey(KeyCode.W) && isCollide))
+    if ((Input.GetKeyDown(KeyCode.W) && isGround) || (Input.GetKeyDown(KeyCode.W) && isCollide))
     {
       anim.SetTrigger("Jump");
       rb.AddForce(new Vector2(0, jumpForce));
@@ -115,7 +127,7 @@ public class HeroController : MonoBehaviour
       anim.SetTrigger("HardAttack");
     }
 
-
+    
     transform.Translate(Input.GetAxis("Horizontal") * speed * Time.deltaTime, 0, 0);
   }
 
@@ -167,6 +179,20 @@ public class HeroController : MonoBehaviour
     yield return new WaitForSeconds(0.5f);
     Physics2D.IgnoreLayerCollision(playerObject, collideObject, false);
     jumpOffEnable = false;
+  }
+
+  void CheckHeroOnScreen ()
+  {
+    transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+    mainCameraInitialPosX = CameraController.cameraInitialPosX;
+    mainCameraFinalPosX = CameraController.cameraFinalPosX;
+    mainCameraInitialPosY = CameraController.cameraInitialPosY;
+    mainCameraFinalPosY = CameraController.cameraFinalPosY;
+
+    if (heroCollider.bounds.min.x < mainCameraInitialPosX)
+    {
+      transform.position = new Vector3(mainCameraInitialPosX + heroCollider.bounds.size.x / 2, transform.position.y, transform.position.z);
+    }
   }
 
   void Flip()
